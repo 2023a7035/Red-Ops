@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Scope & Settings – RedOps{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Target Scope & System Governance</h1>
+        <div class="page-subtitle">Configure laboratory allowlists, AI provider integrations, and compliance audit policies</div>
+    </div>
+    <div>
+        <button class="btn btn-danger" onclick="resetSeedData()">
+            Reset Baseline Lab Dataset
+        </button>
+    </div>
+</div>
+
+<!-- Two-Column Scope Allowlist & System Configuration -->
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:24px;">
+    <!-- Authorized Allowlist Management -->
+    <div class="cyber-card">
+        <div class="cyber-card-header">
+            <div class="cyber-card-title">
+                <svg style="width:16px; height:16px; fill:var(--status-success);" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                Authorized Target Scope (Strict Allowlist)
+            </div>
+            <span class="badge badge-success">ACTIVE ENFORCEMENT</span>
+        </div>
+
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
+            RedOps will strictly reject any scan or simulation request aimed at targets outside this allowlist.
+        </div>
+
+        <form id="addAllowlistForm" onsubmit="addAllowlistTarget(event)" style="display:flex; gap:10px; margin-bottom:16px;">
+            <input type="text" id="newTargetInput" class="form-control font-mono" placeholder="IP/CIDR (e.g. 192.168.1.50)" required>
+            <input type="text" id="newLabelInput" class="form-control" placeholder="Label" required>
+            <button type="submit" class="btn btn-primary" style="white-space:nowrap;">Add Target</button>
+        </form>
+
+        <div class="table-responsive">
+            <table class="cyber-table">
+                <thead>
+                    <tr>
+                        <th>Target IP / Subnet</th>
+                        <th>Label</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="allowlistTbody">
+                    {% for a in allowlist %}
+                    <tr>
+                        <td class="font-mono"><b>{{ a.target }}</b></td>
+                        <td style="color:var(--text-muted);">{{ a.label }}</td>
+                        <td><span class="badge badge-success">AUTHORIZED</span></td>
+                        <td>
+                            {% if a.target not in ['127.0.0.1', '172.28.0.0/16'] %}
+                            <button class="btn btn-danger" style="padding:2px 8px; font-size:11px;" onclick="deleteAllowlistTarget({{ a.id }})">Remove</button>
+                            {% else %}
+                            <span style="font-size:10px; color:var(--text-dim);">Core Lab</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- AI & System Configuration Card -->
+    <div class="cyber-card">
+        <div class="cyber-card-header">
+            <div class="cyber-card-title">
+                <svg style="width:16px; height:16px; fill:var(--accent-purple);" viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.38-1 1.72V7h2a3 3 0 0 1 3 3v1h1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-1v1a3 3 0 0 1-3 3h-2v1.28c.6.34 1 .98 1 1.72a2 2 0 1 1-4 0c0-.74.4-1.38 1-1.72V20H9a3 3 0 0 1-3-3v-1H5a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3h1V7a3 3 0 0 1 3-3h2V5.72A1.993 1.993 0 0 1 10 4a2 2 0 0 1 2-2z"/></svg>
+                AI Reasoning & System Parameters
+            </div>
+            <span class="badge badge-cyan">ADVISORY MODE</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="background:#080c14; border:1px solid #162238; border-radius:6px; padding:12px;">
+                <div style="font-size:11px; color:var(--text-dim); text-transform:uppercase;">Configured AI Engine</div>
+                <div style="font-size:14px; font-weight:bold; color:#fff; margin-top:2px;">
+                    {{ ai_provider.upper() }} (Deterministic Expert Rule Fallback Active)
+                </div>
+            </div>
+
+            <div style="background:#080c14; border:1px solid #162238; border-radius:6px; padding:12px;">
+                <div style="font-size:11px; color:var(--text-dim); text-transform:uppercase;">NVD Vulnerability API</div>
+                <div style="font-size:14px; font-weight:bold; color:var(--status-success); margin-top:2px;">
+                    Active (Rate-Limited NIST NVD 2.0 Client & Curated Offline DB)
+                </div>
+            </div>
+
+            <div style="background:#080c14; border:1px solid #162238; border-radius:6px; padding:12px;">
+                <div style="font-size:11px; color:var(--text-dim); text-transform:uppercase;">Database Storage</div>
+                <div style="font-size:14px; font-weight:bold; color:#fff; margin-top:2px;">
+                    SQLite 3 (database/redops.db) with Foreign Keys Enforced
+                </div>
+            </div>
+
+            <div style="background:rgba(255, 42, 95, 0.08); border-left:3px solid var(--severity-critical); padding:10px 14px; border-radius:4px; font-size:11px; color:#ff4777;">
+                <b>SAFETY GUARANTEE:</b> The application will never perform weaponized exploit delivery, credential theft, persistence, or denial-of-service. All active probes strictly utilize safe non-destructive network handshakes.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Compliance Audit Logs -->
+<div class="cyber-card">
+    <div class="cyber-card-header">
+        <div class="cyber-card-title">
+            <svg style="width:16px; height:16px; fill:var(--status-success);" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+            System Security Audit Log
+        </div>
+        <span class="badge badge-neutral">TAMPER-EVIDENT TRAIL</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="cyber-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                    <th>Operator ID</th>
+                    <th>Target</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in audit_logs %}
+                <tr>
+                    <td class="font-mono" style="font-size:11px; color:var(--text-muted);">{{ log.timestamp }}</td>
+                    <td class="font-mono"><b style="color:var(--accent-cyan);">{{ log.action }}</b></td>
+                    <td><span class="badge badge-neutral">{{ log.user_id }}</span></td>
+                    <td class="font-mono">{{ log.target or '--' }}</td>
+                    <td style="font-size:12px; color:var(--text-muted);">{{ log.details }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function addAllowlistTarget(e) {
+    e.preventDefault();
+    const target = document.getElementById("newTargetInput").value.trim();
+    const label = document.getElementById("newLabelInput").value.trim();
+
+    try {
+        const resp = await fetch("/api/settings/allowlist/add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ target: target, label: label, description: "Manual Operator Addition" })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            showToast(`Added ${target} to allowlist.`, "success");
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showToast(data.error || "Failed to add target.", "error");
+        }
+    } catch (err) {
+        showToast("Error adding target.", "error");
+    }
+}
+
+async function deleteAllowlistTarget(id) {
+    if (!confirm("Are you sure you want to remove this target from the authorized allowlist?")) return;
+
+    try {
+        const resp = await fetch(`/api/settings/allowlist/${id}`, { method: "DELETE" });
+        const data = await resp.json();
+        if (data.success) {
+            showToast("Target removed from allowlist.", "success");
+            setTimeout(() => window.location.reload(), 1000);
+        }
+    } catch (err) {
+        showToast("Error removing target.", "error");
+    }
+}
+
+async function resetSeedData() {
+    if (!confirm("Reset database to baseline enterprise laboratory dataset? Existing scan history will be refreshed.")) return;
+
+    try {
+        const resp = await fetch("/api/settings/reset-seed", { method: "POST" });
+        const data = await resp.json();
+        if (data.success) {
+            showToast("Database restored to baseline enterprise lab.", "success");
+            setTimeout(() => window.location.reload(), 1200);
+        }
+    } catch (err) {
+        showToast("Error resetting database.", "error");
+    }
+}
+</script>
+{% endblock %}

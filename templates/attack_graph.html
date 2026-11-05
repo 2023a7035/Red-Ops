@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Graph Attack-Path Analysis – RedOps{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cytoscape.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Graph-Based Attack-Path Analysis</h1>
+        <div class="page-subtitle">Interactive threat graph modeling lateral movement, exploit chaining, and crown jewel exposure</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+        <label style="font-size:12px; color:var(--text-muted); font-weight:600;">Highlight Attack Path:</label>
+        <select id="attackPathSelect" class="form-control font-mono" style="width:280px;">
+            <option value="">-- Select Synthesized Attack Vector --</option>
+            {% for p in paths %}
+            <option value="{{ loop.index0 }}">{{ p.name }} (Risk: {{ p.risk_score }})</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+<!-- Cytoscape Graph Canvas -->
+<div class="cy-viewport-wrapper">
+    <!-- Floating Toolbar -->
+    <div class="cy-toolbar">
+        <select id="cyLayoutSelect" class="cy-select">
+            <option value="cose">Force-Directed Layout (CoSE)</option>
+            <option value="breadthfirst">Breadth-First Hierarchical</option>
+            <option value="concentric">Concentric Topology</option>
+            <option value="circle">Circular Ring</option>
+        </select>
+        <button class="cy-btn" onclick="fitGraph()">Fit to Screen</button>
+        <button class="cy-btn" onclick="initAttackGraph()">Reset Graph</button>
+    </div>
+
+    <!-- Cytoscape Canvas Container -->
+    <div id="cy"></div>
+
+    <!-- Floating Legend -->
+    <div class="cy-legend">
+        <div style="font-weight:700; color:#fff; margin-bottom:4px; font-size:10px; text-transform:uppercase;">Topology Legend</div>
+        <div class="legend-item"><span class="legend-icon legend-entry"></span> External Threat Actor</div>
+        <div class="legend-item"><span class="legend-icon legend-host"></span> Enterprise Host / Server</div>
+        <div class="legend-item"><span class="legend-icon legend-service"></span> Exposed Network Service</div>
+        <div class="legend-item"><span class="legend-icon legend-cve"></span> Correlated CVE Vulnerability</div>
+        <div class="legend-item"><span class="legend-icon legend-target"></span> Crown Jewel Target (DB/DC)</div>
+    </div>
+
+    <!-- Node Inspector Drawer (Opens on node tap) -->
+    <div id="nodeInspector" class="cy-inspector">
+        <div class="inspector-header">
+            <div class="inspector-title" id="inspTitle">Node Inspection</div>
+            <button class="inspector-close" onclick="closeNodeInspector()">&times;</button>
+        </div>
+        <div class="inspector-field">
+            <div class="inspector-label">Entity Category</div>
+            <div class="inspector-val" id="inspType">--</div>
+        </div>
+        <div class="inspector-field">
+            <div class="inspector-label">Criticality / Severity</div>
+            <div class="inspector-val" id="inspCriticality">--</div>
+        </div>
+        <div class="inspector-field">
+            <div class="inspector-label">Network Coordinates</div>
+            <div class="inspector-val font-mono" id="inspIp">--</div>
+        </div>
+        <div class="inspector-field">
+            <div class="inspector-label">Port / Protocol</div>
+            <div class="inspector-val font-mono" id="inspPort">--</div>
+        </div>
+        <div class="inspector-field">
+            <div class="inspector-label">Correlated CVE</div>
+            <div class="inspector-val font-mono" id="inspCve">--</div>
+        </div>
+        <div class="inspector-field">
+            <div class="inspector-label">Defensive Mitigation Guidance</div>
+            <div class="inspector-val" id="inspRemediation" style="font-size:11px; line-height:1.4; color:var(--accent-cyan);">--</div>
+        </div>
+    </div>
+</div>
+
+<!-- Synthesized Attack Path Summary Table -->
+<div class="cyber-card" style="margin-top:24px;">
+    <div class="cyber-card-header">
+        <div class="cyber-card-title">
+            <svg style="width:16px; height:16px; fill:var(--severity-critical);" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+            Synthesized Lateral Attack Paths & Risk Prioritization
+        </div>
+        <span class="badge badge-critical">NETWORKX GRAPH ENGINE</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="cyber-table">
+            <thead>
+                <tr>
+                    <th>Attack Vector Name</th>
+                    <th>Entrypoint</th>
+                    <th>Target Asset</th>
+                    <th>Chained Steps</th>
+                    <th>Risk Score</th>
+                    <th>MITRE ATT&CK Mapping</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in paths %}
+                <tr>
+                    <td>
+                        <b style="color:#fff;">{{ p.name }}</b><br/>
+                        <span style="font-size:11px; color:var(--text-dim);">{{ p.description }}</span>
+                    </td>
+                    <td class="font-mono">{{ p.source_node }}</td>
+                    <td class="font-mono"><span style="color:var(--accent-purple); font-weight:700;">{{ p.target_node }}</span></td>
+                    <td>
+                        <span class="badge badge-neutral">{{ p.path_nodes|length }} Steps</span>
+                    </td>
+                    <td>
+                        <span class="badge {% if p.risk_score >= 9.0 %}badge-critical{% elif p.risk_score >= 7.0 %}badge-high{% else %}badge-medium{% endif %}">
+                            {{ p.risk_score }} / 10.0
+                        </span>
+                    </td>
+                    <td>
+                        {% for t in p.mitre_tactics %}
+                            <span class="badge badge-neutral" style="font-size:9px; margin-bottom:2px;">{{ t }}</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/attack_graph.js') }}"></script>
+{% endblock %}

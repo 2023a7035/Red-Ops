@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ app_title }}{% endblock %} – Red Team Platform</title>
+    <!-- Google Fonts Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- RedOps Custom Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+
+    <!-- Vendor Libraries (Cached locally with fallback) -->
+    <script src="{{ url_for('static', filename='vendor/chart.umd.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/cytoscape.min.js') }}"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-icon">R</div>
+                <div>
+                    <div class="brand-title">RED<span>OPS</span></div>
+                    <div class="brand-subtitle">Red Team Assessment</div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Operations</div>
+                <a href="{{ url_for('dashboard.index') }}" class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('discovery.discovery_page') }}" class="nav-item {% if active_page == 'discovery' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                    Asset Discovery
+                </a>
+                <a href="{{ url_for('vulnerabilities.vulns_page') }}" class="nav-item {% if active_page == 'vulnerabilities' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v2h-2V7zm0 4h2v6h-2v-6z"/></svg>
+                    Vulnerabilities (CVE)
+                </a>
+
+                <div class="nav-section-label">Attack Engineering</div>
+                <a href="{{ url_for('graph.graph_page') }}" class="nav-item {% if active_page == 'attack-graph' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                    Attack Path Graph
+                </a>
+                <a href="{{ url_for('ai.ai_page') }}" class="nav-item {% if active_page == 'ai-reasoning' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.38-1 1.72V7h2a3 3 0 0 1 3 3v1h1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-1v1a3 3 0 0 1-3 3h-2v1.28c.6.34 1 .98 1 1.72a2 2 0 1 1-4 0c0-.74.4-1.38 1-1.72V20H9a3 3 0 0 1-3-3v-1H5a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3h1V7a3 3 0 0 1 3-3h2V5.72A1.993 1.993 0 0 1 10 4a2 2 0 0 1 2-2z"/></svg>
+                    AI Reasoning
+                </a>
+                <a href="{{ url_for('simulation.simulation_page') }}" class="nav-item {% if active_page == 'simulation' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+                    Attack Simulation
+                </a>
+
+                <div class="nav-section-label">Governance & Output</div>
+                <a href="{{ url_for('planner.planner_page') }}" class="nav-item {% if active_page == 'planner' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                    Assessment Planner
+                </a>
+                <a href="{{ url_for('reporting.reports_page') }}" class="nav-item {% if active_page == 'reports' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                    Reports & Exports
+                </a>
+                <a href="{{ url_for('settings.settings_page') }}" class="nav-item {% if active_page == 'settings' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                    Scope & Settings
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="status-dot-pulse"></span>
+                    <span>SYSTEM ARMED</span>
+                </div>
+                <span>{{ app_version }}</span>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="main-wrapper">
+            <!-- Top Command Bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <div class="badge-scope">
+                        <svg style="width:12px; height:12px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                        AUTHORIZED LAB SCOPE: 172.28.0.0/16, 127.0.0.1
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <div class="live-clock" id="liveClock">--:--:-- UTC</div>
+                    <div class="ai-engine-pill">
+                        <svg style="width:12px; height:12px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.38-1 1.72V7h2a3 3 0 0 1 3 3v1h1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-1v1a3 3 0 0 1-3 3h-2v1.28c.6.34 1 .98 1 1.72a2 2 0 1 1-4 0c0-.74.4-1.38 1-1.72V20H9a3 3 0 0 1-3-3v-1H5a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3h1V7a3 3 0 0 1 3-3h2V5.72A1.993 1.993 0 0 1 10 4a2 2 0 0 1 2-2z"/></svg>
+                        AI: {{ ai_provider.upper() }}
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dynamic Page Content -->
+            <main class="content-area">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- RedOps Core Script -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

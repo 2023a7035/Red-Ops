@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Asset & Service Discovery – RedOps{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Authorized Asset & Service Discovery</h1>
+        <div class="page-subtitle">Enforces strict allowlist validation, bounded timeouts, and non-destructive service discovery</div>
+    </div>
+</div>
+
+<!-- Discovery Trigger & Terminal Console -->
+<div style="display:grid; grid-template-columns: 1fr 1.3fr; gap:20px; margin-bottom:24px;">
+    <!-- Scan Parameters Card -->
+    <div class="cyber-card">
+        <div class="cyber-card-header">
+            <div class="cyber-card-title">
+                <svg style="width:16px; height:16px; fill:var(--accent-cyan);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                Scan Target & Authorization
+            </div>
+            <span class="badge badge-success">ALLOWLIST ENFORCED</span>
+        </div>
+
+        <form id="scanForm">
+            <div class="form-group">
+                <label class="form-label">Authorized Target (IP / CIDR / Hostname)</label>
+                <input type="text" id="targetInput" class="form-control font-mono" value="172.28.0.0/16" placeholder="e.g. 172.28.0.0/16 or 127.0.0.1">
+                <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">
+                    Only targets in the authorized scope list are permitted. Arbitrary public IPs are blocked.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Approved Scan Profile</label>
+                <select id="profileSelect" class="form-control">
+                    <option value="quick">Quick Service Scan (Standard Ports - Safe Connect)</option>
+                    <option value="version">Service Version Detection (-sV Banner Grabbing)</option>
+                    <option value="lab">Enterprise Lab Full Subnet Probe (Multi-Tier)</option>
+                </select>
+            </div>
+
+            <div style="background:rgba(0, 119, 254, 0.08); border:1px solid #1e2c4a; border-radius:6px; padding:12px; margin-bottom:16px;">
+                <div style="font-size:11px; font-weight:700; color:var(--accent-cyan); margin-bottom:4px;">APPROVED SCOPE TARGETS:</div>
+                <div style="font-size:11px; color:var(--text-muted); font-family:var(--font-mono);">
+                    {% for a in allowlist %}
+                        • {{ a.target }} ({{ a.label }})<br/>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <button type="submit" id="startScanBtn" class="btn btn-primary" style="width:100%;">
+                Start Authorized Scan
+            </button>
+        </form>
+    </div>
+
+    <!-- Live Execution Terminal -->
+    <div class="terminal-window">
+        <div class="terminal-header">
+            <div class="terminal-dots">
+                <span class="terminal-dot dot-red"></span>
+                <span class="terminal-dot dot-yellow"></span>
+                <span class="terminal-dot dot-green"></span>
+            </div>
+            <div style="font-size:11px; color:#8899b5; font-family:var(--font-mono);">DISCOVERY TELEMETRY CONSOLE</div>
+            <span class="badge badge-neutral">STANDBY</span>
+        </div>
+        <div class="terminal-body" id="scanTerminalBody">
+[*] RedOps Automated Asset Discovery Subsystem ready.
+[*] Engine: Nmap / RedOps High-Performance Socket Engine
+[*] Safety bounds: Rate limits active, non-destructive connection handshakes only.
+[*] Enter an authorized target and click 'Start Authorized Scan' to begin.
+        </div>
+    </div>
+</div>
+
+<!-- Discovered Assets Table -->
+<div class="cyber-card" style="margin-bottom:24px;">
+    <div class="cyber-card-header">
+        <div class="cyber-card-title">
+            <svg style="width:16px; height:16px; fill:var(--accent-blue);" viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/></svg>
+            Discovered Enterprise Assets & Open Ports
+        </div>
+        <span class="badge badge-cyan">4 ACTIVE HOSTS</span>
+    </div>
+    <div class="table-responsive">
+        <table class="cyber-table">
+            <thead>
+                <tr>
+                    <th>Host IP</th>
+                    <th>Hostname</th>
+                    <th>Operating System</th>
+                    <th>Role</th>
+                    <th>Criticality</th>
+                    <th>Open Ports & Discovered Services</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="font-mono"><b>172.28.0.10</b></td>
+                    <td>gw01.corp.internal</td>
+                    <td>Alpine Linux 3.18</td>
+                    <td><span class="badge badge-neutral">Perimeter Gateway</span></td>
+                    <td><span class="badge badge-high">HIGH</span></td>
+                    <td>
+                        <span class="badge badge-low">22: OpenSSH 8.2p1</span>
+                        <span class="badge badge-low">80: Nginx 1.18.0</span>
+                        <span class="badge badge-low">443: Nginx SSL</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="font-mono"><b>172.28.0.20</b></td>
+                    <td>app-portal.corp.internal</td>
+                    <td>Ubuntu 20.04 LTS</td>
+                    <td><span class="badge badge-neutral">Enterprise Web App</span></td>
+                    <td><span class="badge badge-high">HIGH</span></td>
+                    <td>
+                        <span class="badge badge-low">22: OpenSSH 8.2p1</span>
+                        <span class="badge badge-critical">8080: Tomcat 9.0.43 (Spring)</span>
+                        <span class="badge badge-critical">8009: Tomcat AJP 1.3</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="font-mono"><b>172.28.0.30</b></td>
+                    <td>db-cluster01.corp.internal</td>
+                    <td>Debian GNU/Linux 11</td>
+                    <td><span class="badge badge-neutral">Internal Database</span></td>
+                    <td><span class="badge badge-critical">CRITICAL</span></td>
+                    <td>
+                        <span class="badge badge-high">5432: PostgreSQL 12.4</span>
+                        <span class="badge badge-critical">6379: Redis 5.0.7 (Unauth)</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="font-mono"><b>172.28.0.40</b></td>
+                    <td>dc01.corp.internal</td>
+                    <td>Windows Server 2019</td>
+                    <td><span class="badge badge-neutral">Active Directory DC</span></td>
+                    <td><span class="badge badge-critical">CRITICAL</span></td>
+                    <td>
+                        <span class="badge badge-low">88: Kerberos KDC</span>
+                        <span class="badge badge-high">389: Active Directory LDAP</span>
+                        <span class="badge badge-critical">445: Microsoft-DS SMB</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/discovery.js') }}"></script>
+{% endblock %}

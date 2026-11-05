@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Reports & Deliverables – RedOps{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Security Reports & Compliance Deliverables</h1>
+        <div class="page-subtitle">Export executive assessment briefs, graph attack vector summaries, and structured compliance data</div>
+    </div>
+</div>
+
+<!-- Report Generator Cards -->
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:24px;">
+    <!-- PDF Executive Brief -->
+    <div class="cyber-card">
+        <div class="cyber-card-header">
+            <div class="cyber-card-title">
+                <svg style="width:16px; height:16px; fill:var(--severity-critical);" viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                Executive Cybersecurity Assessment Report (PDF)
+            </div>
+            <span class="badge badge-critical">CONFIDENTIAL</span>
+        </div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.6; margin-bottom:16px;">
+            Comprehensive multi-page assessment report generated using ReportLab. Contains executive briefing, authorized lab scope, asset inventory, correlated CVEs with CVSS 3.1 scoring, NetworkX graph-based attack paths, AI reasoning summary, simulation findings, and prioritized remediation matrices.
+        </div>
+        <div style="background:#080c14; border:1px solid #162238; border-radius:6px; padding:12px; margin-bottom:18px; font-size:11px; color:var(--text-dim);">
+            • Executive Overview & Scope Boundaries<br/>
+            • 4 Enterprise Hosts & 11 Services Mapped<br/>
+            • 7 Correlated NVD CVE Records<br/>
+            • Topological Lateral Movement Attack Paths<br/>
+            • Phased Defensive Remediation (P0–P3)
+        </div>
+        <a href="{{ url_for('reporting.download_pdf') }}" class="btn btn-primary" style="width:100%;">
+            <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            Download Executive PDF Report
+        </a>
+    </div>
+
+    <!-- Structured CSV Data Exports -->
+    <div class="cyber-card">
+        <div class="cyber-card-header">
+            <div class="cyber-card-title">
+                <svg style="width:16px; height:16px; fill:var(--accent-cyan);" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                Structured Audit Data Exports (CSV)
+            </div>
+            <span class="badge badge-cyan">SIEM / SOC READY</span>
+        </div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.6; margin-bottom:16px;">
+            Export machine-readable CSV datasets containing raw discovered assets, network port details, and correlated CVE vulnerability records for ingestion into enterprise SIEMs or spreadsheet analysis.
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-top:20px;">
+            <a href="{{ url_for('reporting.download_csv_vulns') }}" class="btn btn-outline" style="justify-content:space-between;">
+                <span>Download Correlated Vulnerabilities (CSV)</span>
+                <span class="badge badge-neutral">7 RECORDS</span>
+            </a>
+            <a href="{{ url_for('reporting.download_csv_assets') }}" class="btn btn-outline" style="justify-content:space-between;">
+                <span>Download Asset & Service Inventory (CSV)</span>
+                <span class="badge badge-neutral">11 SERVICES</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

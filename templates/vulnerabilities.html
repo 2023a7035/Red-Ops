@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Vulnerability Correlation & CVE Mapping – RedOps{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Vulnerability Correlation & CVE Mapping</h1>
+        <div class="page-subtitle">Maps discovered service banners to authoritative NIST NVD v2.0 records & CVSS 3.1 metrics</div>
+    </div>
+    <div style="display:flex; gap:10px;">
+        <button id="correlateBtn" class="btn btn-primary" onclick="runCorrelation()">
+            <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v2h-2V7zm0 4h2v6h-2v-6z"/></svg>
+            Re-run CVE Correlation
+        </button>
+    </div>
+</div>
+
+<!-- Severity Metric Cards -->
+<div class="stats-grid">
+    <div class="stat-card stat-critical">
+        <div class="stat-label">Critical Vulnerabilities</div>
+        <div class="stat-value" style="color:var(--severity-critical);">{{ counts.critical or 0 }}</div>
+        <div class="stat-caption">CVSS Score: 9.0 – 10.0</div>
+    </div>
+    <div class="stat-card stat-high">
+        <div class="stat-label">High Severity Findings</div>
+        <div class="stat-value" style="color:var(--severity-high);">{{ counts.high or 0 }}</div>
+        <div class="stat-caption">CVSS Score: 7.0 – 8.9</div>
+    </div>
+    <div class="stat-card stat-cyan">
+        <div class="stat-label">Medium Severity Findings</div>
+        <div class="stat-value" style="color:var(--severity-medium);">{{ counts.medium or 0 }}</div>
+        <div class="stat-caption">CVSS Score: 4.0 – 6.9</div>
+    </div>
+    <div class="stat-card stat-success">
+        <div class="stat-label">Total Correlated CVEs</div>
+        <div class="stat-value">{{ counts.total or 0 }}</div>
+        <div class="stat-caption">Mapped across discovered services</div>
+    </div>
+</div>
+
+<!-- Vulnerabilities Inventory -->
+<div class="cyber-card">
+    <div class="cyber-card-header">
+        <div class="cyber-card-title">
+            <svg style="width:16px; height:16px; fill:var(--severity-critical);" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+            Authoritative Correlated CVE Inventory
+        </div>
+        <div style="font-size:11px; color:var(--text-muted);">
+            Source: NIST NVD API v2.0 & Verified Offline CVE Database
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="cyber-table">
+            <thead>
+                <tr>
+                    <th>CVE Identifier</th>
+                    <th>Target Host : Port</th>
+                    <th>CVSS 3.1</th>
+                    <th>Affected Versions</th>
+                    <th>Confidence</th>
+                    <th>Vulnerability Title & Recommended Remediation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in vulns %}
+                <tr>
+                    <td class="font-mono">
+                        <b style="color:#fff;">{{ v.cve_id }}</b><br/>
+                        <span style="font-size:10px; color:var(--text-dim);">NIST Verified</span>
+                    </td>
+                    <td class="font-mono">
+                        <b>{{ v.ip_address }}</b>:{{ v.port }}<br/>
+                        <span style="color:var(--accent-cyan); font-size:11px;">{{ v.service_name }} ({{ v.product }})</span>
+                    </td>
+                    <td>
+                        <span class="badge {% if v.severity == 'CRITICAL' %}badge-critical{% elif v.severity == 'HIGH' %}badge-high{% elif v.severity == 'MEDIUM' %}badge-medium{% else %}badge-low{% endif %}">
+                            {{ v.cvss_score }} {{ v.severity }}
+                        </span>
+                    </td>
+                    <td style="font-size:12px; color:var(--text-muted);">
+                        {{ v.affected_versions }}
+                    </td>
+                    <td>
+                        <span class="badge {% if v.confidence == 'CONFIRMED' %}badge-success{% else %}badge-neutral{% endif %}">
+                            {{ v.confidence }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="font-weight:700; color:#fff; font-size:13px; margin-bottom:4px;">{{ v.title }}</div>
+                        <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">{{ v.description }}</div>
+                        <div style="background:rgba(0, 240, 255, 0.05); border-left:3px solid var(--accent-cyan); padding:6px 10px; font-size:11px; color:var(--text-main);">
+                            <b style="color:var(--accent-cyan);">Remediation:</b> {{ v.remediation }}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function runCorrelation() {
+    const btn = document.getElementById("correlateBtn");
+    btn.disabled = true;
+    btn.innerHTML = `<span class="status-dot-pulse"></span> Correlating...`;
+
+    try {
+        const response = await fetch("/api/vulnerabilities/correlate", { method: "POST" });
+        const data = await response.json();
+        if (data.success) {
+            showToast(`Correlation complete: ${data.total_correlated} CVEs evaluated.`, "success");
+            setTimeout(() => window.location.reload(), 1200);
+        } else {
+            showToast("Correlation failed.", "error");
+        }
+    } catch (err) {
+        showToast("Error executing correlation service.", "error");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `Re-run CVE Correlation`;
+    }
+}
+</script>
+{% endblock %}

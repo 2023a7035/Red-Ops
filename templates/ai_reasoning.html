@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}AI Threat Reasoning & Advisory – RedOps{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">AI-Based Threat Reasoning Engine</h1>
+        <div class="page-subtitle">Translates complex graph attack vectors into explainable cybersecurity intelligence and defensive actions</div>
+    </div>
+    <div>
+        <button id="triggerAiBtn" class="btn btn-cyan">
+            <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.38-1 1.72V7h2a3 3 0 0 1 3 3v1h1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3h-1v1a3 3 0 0 1-3 3h-2v1.28c.6.34 1 .98 1 1.72a2 2 0 1 1-4 0c0-.74.4-1.38 1-1.72V20H9a3 3 0 0 1-3-3v-1H5a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3h1V7a3 3 0 0 1 3-3h2V5.72A1.993 1.993 0 0 1 10 4a2 2 0 0 1 2-2z"/></svg>
+            Synthesize Threat Narrative
+        </button>
+    </div>
+</div>
+
+<!-- Main AI Narrative Card -->
+<div class="cyber-card" style="margin-bottom:24px;">
+    <div class="cyber-card-header">
+        <div class="cyber-card-title">
+            <svg style="width:16px; height:16px; fill:var(--accent-purple);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-2h-2v2zm0-4h2V7h-2v6z"/></svg>
+            AI-Generated Attack Chaining Narrative
+        </div>
+        <span id="aiProviderBadge" class="badge badge-neutral">
+            {{ latest_ai.ai_provider if latest_ai else 'Local Rule-Based Security Expert Engine (Deterministic Fallback)' }}
+        </span>
+    </div>
+
+    <div id="aiNarrativeText" style="font-size:13px; line-height:1.7; color:#e2e8f0; white-space:pre-wrap; background:#080c14; border:1px solid #162238; border-radius:6px; padding:18px; margin-bottom:14px;">
+{{ latest_ai.reasoning_text if latest_ai else 'Click "Synthesize Threat Narrative" above to invoke the AI Reasoning module against discovered graph topology.' }}
+    </div>
+
+    <div style="background:rgba(255, 183, 3, 0.08); border-left:3px solid var(--severity-medium); padding:10px 14px; border-radius:4px; font-size:11px; color:#ffb703;">
+        <b>ADVISORY SAFETY BOUNDS:</b> The AI reasoning module operates in an advisory-only capacity. It evaluates NetworkX graph topology and CVSS scores to explain attack mechanics. It possesses no authority to execute shell commands, deploy exploits, or alter security scopes.
+    </div>
+</div>
+
+<!-- Two-Column Evidence and Defensive Roadmap -->
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:24px;">
+    <!-- Key Risk Factors -->
+    <div class="cyber-card">
+        <div class="cyber-card-header">
+            <div class="cyber-card-title">
+                <svg style="width:16px; height:16px; fill:var(--severity-critical);" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                Identified Risk Factors
+            </div>
+            <span class="badge badge-critical">MULTI-FACTOR ANALYSIS</span>
+        </div>
+        <div id="aiRiskFactorsContainer">
+            <div style="display:flex; gap:10px; margin-bottom:8px; align-items:flex-start;">
+                <span style="color:#ff2a5f; font-weight:bold;">▸</span>
+                <div style="font-size:12px; color:#fff;">Vulnerability Density: Multiple CRITICAL severity CVEs (Spring4Shell & Redis RCE) exposed.</div>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:8px; align-items:flex-start;">
+                <span style="color:#ff2a5f; font-weight:bold;">▸</span>
+                <div style="font-size:12px; color:#fff;">Network Architecture: Flat 172.28.0.0/16 lab network lacking ingress firewall microsegmentation between DMZ and database.</div>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:8px; align-items:flex-start;">
+                <span style="color:#ff2a5f; font-weight:bold;">▸</span>
+                <div style="font-size:12px; color:#fff;">Authentication Deficiencies: Default configuration on Redis cache (6379) accepts unauthenticated commands.</div>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:8px; align-items:flex-start;">
+                <span style="color:#ff2a5f; font-weight:bold;">▸</span>
+                <div style="font-size:12px; color:#fff;">Exploit Availability: High public exploit maturity; weaponized PoCs actively exist in open sources.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Defensive Remediation Roadmap -->
+    <div class="cyber-card">
+        <div class="cyber-card-header">
+            <div class="cyber-card-title">
+                <svg style="width:16px; height:16px; fill:var(--status-success);" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                Prioritized Defensive Actions
+            </div>
+            <span class="badge badge-success">ACTION PLAN</span>
+        </div>
+        <div id="aiRemediationContainer">
+            <div style="background:#0d1424; border:1px solid #1e2c4a; border-radius:6px; padding:12px; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span class="badge badge-critical">P0 - IMMEDIATE (24-48 Hours)</span>
+                    <span style="font-size:11px; color:#8899b5; font-family:monospace;">TA0001: Initial Access</span>
+                </div>
+                <div style="font-size:13px; font-weight:bold; color:#fff; margin-bottom:4px;">Patch Critical Boundary RCE Vulnerabilities</div>
+                <div style="font-size:12px; color:#8899b5;">Upgrade Spring Framework to 5.3.18+ / 5.2.20+ and patch Apache Tomcat to 9.0.62+ on app-portal (172.28.0.20).</div>
+            </div>
+            <div style="background:#0d1424; border:1px solid #1e2c4a; border-radius:6px; padding:12px; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span class="badge badge-high">P1 - HIGH (3-7 Days)</span>
+                    <span style="font-size:11px; color:#8899b5; font-family:monospace;">TA0008: Lateral Movement</span>
+                </div>
+                <div style="font-size:13px; font-weight:bold; color:#fff; margin-bottom:4px;">Enforce Zero-Trust Network Microsegmentation</div>
+                <div style="font-size:12px; color:#8899b5;">Isolate Database ports (5432, 6379) and Domain Controller (88, 389, 445) from direct inbound DMZ traffic.</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/ai_reasoning.js') }}"></script>
+{% endblock %}

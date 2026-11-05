@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}500 - System Exception – RedOps{% endblock %}
+
+{% block content %}
+<div style="text-align:center; padding:80px 20px;">
+    <div style="font-size:72px; font-weight:900; color:var(--severity-critical); font-family:var(--font-mono); text-shadow:0 0 20px var(--severity-critical-glow);">500</div>
+    <h2 style="font-size:24px; color:#fff; margin-bottom:12px;">Internal Processing Exception</h2>
+    <p style="color:var(--text-muted); max-width:540px; margin:0 auto 24px;">An internal processing exception was captured by the safety containment boundary. Details have been preserved in the audit log.</p>
+    <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline">Return to Executive Dashboard</a>
+</div>
+{% endblock %}
